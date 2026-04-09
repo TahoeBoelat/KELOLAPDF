@@ -6,7 +6,7 @@ class PDFApp:
     def __init__(self, root):
         self.root = root
         self.root.title("Kelola PDF - Offline")
-        self.root.geometry("550x550")
+        self.root.geometry("650x550")
         
         # State Data
         self.files_terpilih = []
@@ -18,12 +18,15 @@ class PDFApp:
 
         self.tab_merge = ttk.Frame(self.notebook)
         self.tab_split = ttk.Frame(self.notebook)
+        self.tab_word = ttk.Frame(self.notebook)
 
         self.notebook.add(self.tab_merge, text=" Gabung PDF ")
         self.notebook.add(self.tab_split, text=" Potong PDF ")
+        self.notebook.add(self.tab_word, text=" Word ke PDF ")
 
         self.setup_merge_ui()
         self.setup_split_ui()
+        self.setup_word_ui()
 
         # Status Bar (Global)
         self.status_var = tk.StringVar(value="Siap")
@@ -58,7 +61,7 @@ class PDFApp:
         ttk.Button(self.tab_split, text="POTONG & SIMPAN", command=self.proses_potong).pack(pady=30)
     
     # --- TAB 3: WORD KE PDF ---
-    def setup_web_ui(self):
+    def setup_word_ui(self):
         tk.Label(self.tab_word, text="Konversi Word (.docx) ke PDF", font=("Arial", 10, "bold")).pack(pady=10)
         self.lbl_word_path = tk.Label(self.tab_word, text="Belum ada file yang terpilih", fg="green")
         self.lbl_word_path.pack(pady=10)
@@ -73,7 +76,7 @@ class PDFApp:
             self.lbl_word_path.config(text=f.split("/")[-1])
             self.status_var.set("File word siap dikonversi")
     
-    def fungsi_konversi(self):
+    def proses_konversi_word(self):
         if not self.file_word_path:
             messagebox.showwarning("Peringatan", "Pilih file Word dulu!")
             return
@@ -82,7 +85,7 @@ class PDFApp:
         if save_path:
             try:
                 self.status_var.set("Mengonversi.. Mohon menunggu")
-                self.root.update_idletask()
+                self.root.update_idletasks()
                 word_ke_pdf(self.file_word_path, save_path)
                 messagebox.showinfo("Sukses", "File selesai dikonversi")
                 self.status_var.set("Konversi selesai")
