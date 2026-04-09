@@ -1,6 +1,6 @@
 import tkinter as tk
 from tkinter import ttk, filedialog, messagebox
-from logic_pdf import gabung_pdf, potong_pdf
+from logic_pdf import gabung_pdf, potong_pdf, word_ke_pdf
 
 class PDFApp:
     def __init__(self, root):
@@ -56,6 +56,39 @@ class PDFApp:
         self.ent_halaman.pack()
 
         ttk.Button(self.tab_split, text="POTONG & SIMPAN", command=self.proses_potong).pack(pady=30)
+    
+    # --- TAB 3: WORD KE PDF ---
+    def setup_web_ui(self):
+        tk.Label(self.tab_word, text="Konversi Word (.docx) ke PDF", font=("Arial", 10, "bold")).pack(pady=10)
+        self.lbl_word_path = tk.Label(self.tab_word, text="Belum ada file yang terpilih", fg="green")
+        self.lbl_word_path.pack(pady=10)
+        ttk.Button(self.tab_word, text="Pilih File Word", command=self.pilih_file_word).pack(pady=5)
+        ttk.Button(self.tab_word, text="Konversi ke PDF", command=self.proses_konversi_word).pack(pady=40)
+    
+    # --- FUNGSI LOGIKA KONVERSI WORD KE PDF ---
+    def pilih_file_word(self):
+        f = filedialog.askopenfilename(filetypes=[("Word Files", "*.docx")])
+        if f:
+            self.file_word_path = f
+            self.lbl_word_path.config(text=f.split("/")[-1])
+            self.status_var.set("File word siap dikonversi")
+    
+    def fungsi_konversi(self):
+        if not self.file_word_path:
+            messagebox.showwarning("Peringatan", "Pilih file Word dulu!")
+            return
+        
+        save_path = filedialog.asksaveasfilename(defaultextension=".pdf", filetypes=[("PDF Files", "*.pdf")])
+        if save_path:
+            try:
+                self.status_var.set("Mengonversi.. Mohon menunggu")
+                self.root.update_idletask()
+                word_ke_pdf(self.file_word_path, save_path)
+                messagebox.showinfo("Sukses", "File selesai dikonversi")
+                self.status_var.set("Konversi selesai")
+            except Exception as e:
+                messagebox.showerror("Error", f"Pastikan MS Word terinstall. Error: {e}")
+                self.status_var.set("Gagal konversi")
 
     # --- LOGIKA FUNGSI ---
     def pilih_file_multi(self):
@@ -99,7 +132,7 @@ class PDFApp:
                 messagebox.showinfo("Sukses", f"Halaman {hal} berhasil dipotong!")
         except Exception as e:
             messagebox.showerror("Error", f"Terjadi kesalahan: {e}")
-
+    
 if __name__ == "__main__":
     app_root = tk.Tk()
     app = PDFApp(app_root)
