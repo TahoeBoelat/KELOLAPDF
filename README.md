@@ -8,6 +8,10 @@ Aplikasi desktop berbasis Python untuk mengelola file PDF secara cepat dan offli
 
 ## RIWAYAT PENGEMBANGAN (CHANGELOG)
 
+### [v1.3] - 2026-04-14
+- **Fitur Baru:** Penambahan tombol "Hapus file terpilih" pada Tab Merge
+- **UX:** Penambahan pesan peringatan (messagebox) jika user menghapus tanpa memilih file
+
 ### [v1.2] - 2026-04-09
 - **Fitur Baru:** Implementasi konversi Word (.docx) ke PDF menggunakan library `docx2pdf`.
 - **UI:** Migrasi ke sistem navigasi **Tab (Notebook)** untuk antarmuka yang lebih bersih.
