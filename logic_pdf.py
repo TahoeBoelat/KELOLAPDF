@@ -2,6 +2,18 @@ from pypdf import PdfReader, PdfWriter
 from docx2pdf import convert
 import os
 
+# Fungsi untuk mengkonversi multiple docx format ke PDF
+def batch_word_ke_pdf(daftar_docx, folder_tujuan):
+    for docx_path in daftar_docx:
+        # Mengambil nama file asli
+        nama_asli = os.path.basename(docx_path)
+        # Mengganti ekstensi menjadi pdf
+        nama_pdf = os.path.splitext(nama_asli)[0] + ".pdf"
+        # Gabung folder tujuan dengan nama file baru
+        path_output = os.path.join(folder_tujuan, nama_pdf)
+        # Konversi
+        convert(docx_path, path_output) 
+
 # Fungsi untuk menggabungkan PDF
 def gabung_pdf(daftar_file, nama_output):
     # Menyiapkan penulis PDF

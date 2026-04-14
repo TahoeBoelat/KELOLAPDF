@@ -1,18 +1,20 @@
 import tkinter as tk
 from tkinter import ttk, filedialog, messagebox
-from logic_pdf import gabung_pdf, potong_pdf, word_ke_pdf
+import os
+from logic_pdf import gabung_pdf, potong_pdf, batch_word_ke_pdf
 
 class PDFApp:
     def __init__(self, root):
         self.root = root
-        self.root.title("Kelola PDF - Offline")
-        self.root.geometry("650x550")
+        self.root.title("Kelola PDF")
+        self.root.geometry("600x650")
         
         # State Data
-        self.files_terpilih = []
-        self.file_tunggal_path = ""
+        self.files_merge = []
+        self.files_word = []
+        self.file_split_path = ""
 
-        # --- SETUP TAB (NOTEBOOK) ---
+        # Setup Tabs
         self.notebook = ttk.Notebook(root)
         self.notebook.pack(expand=True, fill="both", padx=10, pady=10)
 
@@ -28,130 +30,116 @@ class PDFApp:
         self.setup_split_ui()
         self.setup_word_ui()
 
-        # Status Bar (Global)
+        # Status Bar
         self.status_var = tk.StringVar(value="Siap")
         self.status_label = tk.Label(root, textvariable=self.status_var, bd=1, relief=tk.SUNKEN, anchor=tk.W)
         self.status_label.pack(side=tk.BOTTOM, fill=tk.X)
 
-    # --- TAB 1: UI GABUNG ---
+    # --- TAB 1: GABUNG ---
     def setup_merge_ui(self):
-        tk.Label(self.tab_merge, text="Daftar File untuk Digabung:", font=("Arial", 10, "bold")).pack(pady=10)
-        self.listbox = tk.Listbox(self.tab_merge, width=60, height=10)
-        self.listbox.pack(padx=20, pady=5)
-
-        # --- Kumpulan variabel Button ---
+        tk.Label(self.tab_merge, text="Antrean Gabung PDF", font=("Arial", 10, "bold")).pack(pady=10)
+        self.list_merge = tk.Listbox(self.tab_merge, width=70, height=10)
+        self.list_merge.pack(padx=20, pady=5)
+        
         btn_frame = ttk.Frame(self.tab_merge)
         btn_frame.pack(pady=10)
-        ttk.Button(btn_frame, text="Tambah File", command=self.pilih_file_multi).grid(row=0, column=0, padx=5)
-        ttk.Button(btn_frame, text="Hapus Terpilih", command=self.hapus_satu_file).grid(row=0, column=1, padx=5)
-        ttk.Button(btn_frame, text="Hapus Semua", command=self.reset_list).grid(row=0, column=2, padx=5)
-
+        ttk.Button(btn_frame, text="Tambah File", command=self.pilih_merge_multi).grid(row=0, column=0, padx=5)
+        ttk.Button(btn_frame, text="Hapus Terpilih", command=self.hapus_merge_satu).grid(row=0, column=1, padx=5)
+        
         ttk.Button(self.tab_merge, text="PROSES GABUNG", command=self.proses_gabung).pack(pady=20)
 
-    # --- TAB 2: UI POTONG ---
+    # --- TAB 2: POTONG ---
     def setup_split_ui(self):
-        tk.Label(self.tab_split, text="File Sumber:", font=("Arial", 10, "bold")).pack(pady=10)
-        self.lbl_file_split = tk.Label(self.tab_split, text="Belum ada file", fg="blue")
-        self.lbl_file_split.pack(pady=5)
+        tk.Label(self.tab_split, text="Potong Per Halaman", font=("Arial", 10, "bold")).pack(pady=10)
+        self.lbl_file_split = tk.Label(self.tab_split, text="Belum ada file terpilih", fg="blue")
+        self.lbl_file_split.pack(pady=10)
+        ttk.Button(self.tab_split, text="Pilih PDF Sumber", command=self.pilih_split_tunggal).pack()
         
-        ttk.Button(self.tab_split, text="Pilih File PDF", command=self.pilih_file_tunggal).pack(pady=5)
-
-        tk.Label(self.tab_split, text="Masukkan Nomor Halaman:").pack(pady=20)
+        tk.Label(self.tab_split, text="Nomor Halaman:").pack(pady=(20, 5))
         self.ent_halaman = ttk.Entry(self.tab_split, width=10)
         self.ent_halaman.pack()
-
-        ttk.Button(self.tab_split, text="POTONG & SIMPAN", command=self.proses_potong).pack(pady=30)
-    
-    # --- TAB 3: WORD KE PDF ---
-    def setup_word_ui(self):
-        tk.Label(self.tab_word, text="Konversi Word (.docx) ke PDF", font=("Arial", 10, "bold")).pack(pady=10)
-        self.lbl_word_path = tk.Label(self.tab_word, text="Belum ada file yang terpilih", fg="green")
-        self.lbl_word_path.pack(pady=10)
-        ttk.Button(self.tab_word, text="Pilih File Word", command=self.pilih_file_word).pack(pady=5)
-        ttk.Button(self.tab_word, text="Konversi ke PDF", command=self.proses_konversi_word).pack(pady=40)
-    
-    # --- FUNGSI LOGIKA KONVERSI WORD KE PDF ---
-    def pilih_file_word(self):
-        f = filedialog.askopenfilename(filetypes=[("Word Files", "*.docx")])
-        if f:
-            self.file_word_path = f
-            self.lbl_word_path.config(text=f.split("/")[-1])
-            self.status_var.set("File word siap dikonversi")
-    
-    def proses_konversi_word(self):
-        if not self.file_word_path:
-            messagebox.showwarning("Peringatan", "Pilih file Word dulu!")
-            return
         
-        save_path = filedialog.asksaveasfilename(defaultextension=".pdf", filetypes=[("PDF Files", "*.pdf")])
-        if save_path:
-            try:
-                self.status_var.set("Mengonversi.. Mohon menunggu")
-                self.root.update_idletasks()
-                word_ke_pdf(self.file_word_path, save_path)
-                messagebox.showinfo("Sukses", "File selesai dikonversi")
-                self.status_var.set("Konversi selesai")
-            except Exception as e:
-                messagebox.showerror("Error", f"Pastikan MS Word terinstall. Error: {e}")
-                self.status_var.set("Gagal konversi")
+        ttk.Button(self.tab_split, text="PROSES POTONG", command=self.proses_potong).pack(pady=30)
 
-    # --- LOGIKA FUNGSI ---
-    def pilih_file_multi(self):
+    # --- TAB 3: WORD KE PDF (BATCH) ---
+    def setup_word_ui(self):
+        tk.Label(self.tab_word, text="Antrean Konversi Word ke PDF", font=("Arial", 10, "bold")).pack(pady=10)
+        self.list_word = tk.Listbox(self.tab_word, width=70, height=10)
+        self.list_word.pack(padx=20, pady=5)
+
+        btn_frame = ttk.Frame(self.tab_word)
+        btn_frame.pack(pady=10)
+        ttk.Button(btn_frame, text="Tambah Word", command=self.pilih_word_multi).grid(row=0, column=0, padx=5)
+        ttk.Button(btn_frame, text="Hapus Terpilih", command=self.hapus_word_satu).grid(row=0, column=1, padx=5)
+        
+        ttk.Button(self.tab_word, text="KONVERSI SEMUA KE PDF", command=self.proses_batch_word).pack(pady=20)
+
+    # --- FUNGSI LOGIKA (MERGE) ---
+    def pilih_merge_multi(self):
         files = filedialog.askopenfilenames(filetypes=[("PDF Files", "*.pdf")])
-        if files:
-            for f in files:
-                if f not in self.files_terpilih:
-                    self.files_terpilih.append(f)
-                    self.listbox.insert(tk.END, f.split("/")[-1])
-            self.status_var.set(f"Total: {len(self.files_terpilih)} file")
+        for f in files:
+            if f not in self.files_merge:
+                self.files_merge.append(f)
+                self.list_merge.insert(tk.END, os.path.basename(f))
 
-    def reset_list(self):
-        self.files_terpilih = []
-        self.listbox.delete(0, tk.END)
-        self.status_var.set("Daftar dikosongkan")
-    
-    # --- Fungsi untuk menghapus satu file ---
-    def hapus_satu_file(self):
+    def hapus_merge_satu(self):
         try:
-            # 1. Mengambil index baris yang sedang user klik
-            index_terpilih = self.listbox.curselection()[0]
-            # 2. Menghapus dari list data kita
-            del self.files_terpilih[index_terpilih]
-            # 3. Menghapus tampilan dari Listbox di layar
-            self.listbox.delete(index_terpilih)
-
-            self.status_var.set(f"File dihapus. Sisa: {len(self.files_terpilih)} file")
-        except IndexError:
-            messagebox.showwarning("Peringatan", "Pilih file di daftar terlebih dahulu!")
+            idx = self.list_merge.curselection()[0]
+            del self.files_merge[idx]
+            self.list_merge.delete(idx)
+        except: messagebox.showwarning("Peringatan", "Pilih file di daftar dulu!")
 
     def proses_gabung(self):
-        if not self.files_terpilih:
-            messagebox.showwarning("Peringatan", "Pilih file dulu!")
-            return
+        if not self.files_merge: return
         out = filedialog.asksaveasfilename(defaultextension=".pdf")
         if out:
-            gabung_pdf(self.files_terpilih, out)
-            messagebox.showinfo("Sukses", "PDF berhasil digabung!")
+            gabung_pdf(self.files_merge, out)
+            messagebox.showinfo("Sukses", "PDF Berhasil digabungkan!")
 
-    def pilih_file_tunggal(self):
+    # --- FUNGSI LOGIKA (SPLIT) ---
+    def pilih_split_tunggal(self):
         f = filedialog.askopenfilename(filetypes=[("PDF Files", "*.pdf")])
         if f:
-            self.file_tunggal_path = f
-            self.lbl_file_split.config(text=f.split("/")[-1])
+            self.file_split_path = f
+            self.lbl_file_split.config(text=os.path.basename(f))
 
     def proses_potong(self):
-        if not self.file_tunggal_path or not self.ent_halaman.get():
-            messagebox.showwarning("Peringatan", "Lengkapi file dan nomor halaman!")
-            return
+        if not self.file_split_path or not self.ent_halaman.get(): return
+        out = filedialog.asksaveasfilename(defaultextension=".pdf")
+        if out:
+            try:
+                potong_pdf(self.file_split_path, int(self.ent_halaman.get()), out)
+                messagebox.showinfo("Sukses", "Halaman berhasil dipotong!")
+            except Exception as e: messagebox.showerror("Error", str(e))
+
+    # --- FUNGSI LOGIKA (WORD BATCH) ---
+    def pilih_word_multi(self):
+        files = filedialog.askopenfilenames(filetypes=[("Word Files", "*.docx *.doc")])
+        for f in files:
+            if f not in self.files_word:
+                self.files_word.append(f)
+                self.list_word.insert(tk.END, os.path.basename(f))
+
+    def hapus_word_satu(self):
         try:
-            hal = int(self.ent_halaman.get())
-            out = filedialog.asksaveasfilename(defaultextension=".pdf")
-            if out:
-                potong_pdf(self.file_tunggal_path, hal, out)
-                messagebox.showinfo("Sukses", f"Halaman {hal} berhasil dipotong!")
-        except Exception as e:
-            messagebox.showerror("Error", f"Terjadi kesalahan: {e}")
-    
+            idx = self.list_word.curselection()[0]
+            del self.files_word[idx]
+            self.list_word.delete(idx)
+        except: messagebox.showwarning("Peringatan", "Pilih file di daftar dulu!")
+
+    def proses_batch_word(self):
+        if not self.files_word: return
+        folder = filedialog.askdirectory(title="Pilih Folder Hasil PDF")
+        if folder:
+            self.status_var.set("Sedang mengonversi massal... Mohon tunggu.")
+            self.root.update_idletasks() # PERBAIKAN: Pakai huruf 's' di akhir
+            try:
+                batch_word_ke_pdf(self.files_word, folder)
+                messagebox.showinfo("Sukses", f"Konversi selesai! Cek folder: {folder}")
+            except Exception as e:
+                messagebox.showerror("Error", f"Pastikan MS Word terinstall. Detail: {e}")
+            self.status_var.set("Siap")
+
 if __name__ == "__main__":
     app_root = tk.Tk()
     app = PDFApp(app_root)
