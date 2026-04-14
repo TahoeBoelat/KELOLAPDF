@@ -9,6 +9,12 @@ Aplikasi desktop berbasis Python untuk mengelola file PDF secara cepat dan offli
 ## RIWAYAT PENGEMBANGAN (CHANGELOG)
 
 ### [v1.3] - 2026-04-14
+- **Fitur Baru:** Implementasi Batch Processing untuk Word-to-PDF (Konversi massal).
+- **Kompatibilitas:** Mendukung format legacy `.doc` selain `.docx`.
+- **UX:** Sinkronisasi antarmuka antartab menggunakan sistem Listbox dan Folder Output.
+- **Bug Fix:** Memperbaiki error atribut pada fungsi `update_idletasks`.
+
+### [v1.3] - 2026-04-14
 - **Fitur Baru:** Penambahan tombol "Hapus file terpilih" pada Tab Merge
 - **UX:** Penambahan pesan peringatan (messagebox) jika user menghapus tanpa memilih file
 
