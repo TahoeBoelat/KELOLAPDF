@@ -39,10 +39,12 @@ class PDFApp:
         self.listbox = tk.Listbox(self.tab_merge, width=60, height=10)
         self.listbox.pack(padx=20, pady=5)
 
+        # --- Kumpulan variabel Button ---
         btn_frame = ttk.Frame(self.tab_merge)
         btn_frame.pack(pady=10)
         ttk.Button(btn_frame, text="Tambah File", command=self.pilih_file_multi).grid(row=0, column=0, padx=5)
-        ttk.Button(btn_frame, text="Hapus Semua", command=self.reset_list).grid(row=0, column=1, padx=5)
+        ttk.Button(btn_frame, text="Hapus Terpilih", command=self.hapus_satu_file).grid(row=0, column=1, padx=5)
+        ttk.Button(btn_frame, text="Hapus Semua", command=self.reset_list).grid(row=0, column=2, padx=5)
 
         ttk.Button(self.tab_merge, text="PROSES GABUNG", command=self.proses_gabung).pack(pady=20)
 
@@ -107,6 +109,20 @@ class PDFApp:
         self.files_terpilih = []
         self.listbox.delete(0, tk.END)
         self.status_var.set("Daftar dikosongkan")
+    
+    # --- Fungsi untuk menghapus satu file ---
+    def hapus_satu_file(self):
+        try:
+            # 1. Mengambil index baris yang sedang user klik
+            index_terpilih = self.listbox.curselection()[0]
+            # 2. Menghapus dari list data kita
+            del self.files_terpilih[index_terpilih]
+            # 3. Menghapus tampilan dari Listbox di layar
+            self.listbox.delete(index_terpilih)
+
+            self.status_var.set(f"File dihapus. Sisa: {len(self.files_terpilih)} file")
+        except IndexError:
+            messagebox.showwarning("Peringatan", "Pilih file di daftar terlebih dahulu!")
 
     def proses_gabung(self):
         if not self.files_terpilih:
