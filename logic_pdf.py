@@ -1,5 +1,6 @@
 from pypdf import PdfReader, PdfWriter
 from docx2pdf import convert
+from PIL import Image
 import os
 
 # Fungsi untuk mengkonversi multiple docx format ke PDF
@@ -46,3 +47,25 @@ def potong_pdf(input_pdf, halaman_pilihan, nama_output):
 # Fungsi untuk konversi DOCX ke PDF
 def word_ke_pdf(input_path, output_path):
     convert(input_path, output_path)
+
+# Fungsi untuk konversi gambar ke PDF
+def image_ke_pdf(daftar_gambar, path_output):
+    """Menggabungkan daftar path gambar menjadi satu file PDF"""
+    list_image = []
+
+    for img_path in daftar_gambar:
+        img = Image.open(img_path)
+        # Variabel untuk mengkonversi RGBA ke RGB
+        img_rgb = img.convert('RGB')
+        list_image.append(img_rgb)
+    
+    if list_image:
+        image_pertama = list_image[0]
+        sisanya = list_image[1:]
+
+        image_pertama.save(
+            path_output,
+            "PDF",
+            save_all = True,
+            append_image=sisanya
+        )

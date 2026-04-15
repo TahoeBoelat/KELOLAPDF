@@ -13,6 +13,7 @@ class PDFApp:
         self.files_merge = []
         self.files_word = []
         self.file_split_path = ""
+        self.files_image = []
 
         # Setup Tabs
         self.notebook = ttk.Notebook(root)
@@ -21,14 +22,17 @@ class PDFApp:
         self.tab_merge = ttk.Frame(self.notebook)
         self.tab_split = ttk.Frame(self.notebook)
         self.tab_word = ttk.Frame(self.notebook)
+        self.tab_image = ttk.Frame(self.notebook)
 
         self.notebook.add(self.tab_merge, text=" Gabung PDF ")
         self.notebook.add(self.tab_split, text=" Potong PDF ")
         self.notebook.add(self.tab_word, text=" Word ke PDF ")
+        self.notebook.add(self.tab_image, text=" Foto ke PDF ")
 
         self.setup_merge_ui()
         self.setup_split_ui()
         self.setup_word_ui()
+        self.setup_image_ui()
 
         # Status Bar
         self.status_var = tk.StringVar(value="Siap")
@@ -138,6 +142,52 @@ class PDFApp:
                 messagebox.showinfo("Sukses", f"Konversi selesai! Cek folder: {folder}")
             except Exception as e:
                 messagebox.showerror("Error", f"Pastikan MS Word terinstall. Detail: {e}")
+            self.status_var.set("Siap")
+    
+    # --- TAB KONVERSI FOTO KE PDF ---
+    def setup_image_ui(self):
+        tk.Label(self.tab_image, text="Daftar Foto (JPG/PNG) untuk jadi PDF", font=("Arial", 10, "bold")).pack(pady=10)
+        self.list_image = tk.Listbox(self.tab_image, width=70, height=10)
+        self.list_image.pack(padx=20, pady=5)
+
+        btn_frame = ttk.Frame(self.tab_image)
+        btn_frame.pack(pady=10)
+        ttk.Button(btn_frame, text="Tambah Foto", command=self.pilih_image_multi).grid(row=0, column=0, padx=5)
+        ttk.Button(btn_frame, text="Hapus Terpilih", command=self.hapus_image_satu).grid(row=0, column=1, padx=5)
+
+        ttk.Button(self.tab_image, text="GABUNG FOTO KE PDF", command=self.proses_image_pdf).pack(pady=20)
+    
+    # Fungsi memilih multiple file gambar
+    def pilih_image_multi(self):
+        files = filedialog.askopenfilenames(filetypes=[("Image Files", "*.jpg *jpeg *.png")])
+        for f in files:
+            if f not in self.files_image:
+                self.files_image.append(f)
+                self.list_image.insert(tk.END, os.path.basename(f))
+    
+    # Fungsi menghapus satu file gambar
+    def hapus_image_satu(self):
+        try:
+            idx = self.list_image.curselection()[0]
+            del self.files_image[idx]
+        except: messagebox.showwarning("Peringatan", "Pilih foto yang ingin dihapus!")
+    
+    # Fungsi untuk mengkonversi gambar ke PDF
+    def proses_image_pdf(self):
+        if not self.files_image:
+            messagebox.showwarning("Peringatan", "Belum ada foto yang terpilih")
+            return
+        out = filedialog.asksaveasfilename(defaultextension=".pdf", filetypes=[("PDF Files", "*.pdf")])
+        
+        if out:
+            self.status_var.set("Mengonversi foto ke PDF")
+            self.root.update_idletasks()
+            try:
+                from logic_pdf import image_ke_pdf
+                image_ke_pdf(self.files_image, out)
+                messagebox.showinfo("Sukses", f"Berhasil membuat PDF dari {len(self.files_image)} foto!")
+            except Exception as e:
+                messagebox.showerror("Error", f"Gagal memproses gambar: {e}")
             self.status_var.set("Siap")
 
 if __name__ == "__main__":
