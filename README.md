@@ -8,6 +8,11 @@ Aplikasi desktop berbasis Python untuk mengelola file PDF secara cepat dan offli
 
 ## RIWAYAT PENGEMBANGAN (CHANGELOG)
 
+### [v1.4] - 2026-04-16
+- **Fitur Baru:** Implementasi fitur konversi gambar ke PDF
+- **Perbaikan Bug:** Memperbaiki masalah seleksi Listbox menggunakan `exportselection=False` sehingga tombol hapus bekerja lebih stabil.
+- **Perbaikan Bug:** Sinkronisasi penulisan biner pada library Pillow untuk menghindari error `write() argument must be str`.
+
 ### [v1.3] - 2026-04-14
 - **Fitur Baru:** Implementasi Batch Processing untuk Word-to-PDF (Konversi massal).
 - **Kompatibilitas:** Mendukung format legacy `.doc` selain `.docx`.
