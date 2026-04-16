@@ -147,7 +147,7 @@ class PDFApp:
     # --- TAB KONVERSI FOTO KE PDF ---
     def setup_image_ui(self):
         tk.Label(self.tab_image, text="Daftar Foto (JPG/PNG) untuk jadi PDF", font=("Arial", 10, "bold")).pack(pady=10)
-        self.list_image = tk.Listbox(self.tab_image, width=70, height=10)
+        self.list_image = tk.Listbox(self.tab_image, width=70, height=10, exportselection=False)
         self.list_image.pack(padx=20, pady=5)
 
         btn_frame = ttk.Frame(self.tab_image)
@@ -167,10 +167,15 @@ class PDFApp:
     
     # Fungsi menghapus satu file gambar
     def hapus_image_satu(self):
-        try:
-            idx = self.list_image.curselection()[0]
+        seleksi = self.list_image.curselection()
+
+        if seleksi:
+            idx = seleksi[0]
             del self.files_image[idx]
-        except: messagebox.showwarning("Peringatan", "Pilih foto yang ingin dihapus!")
+            self.list_image.delete(idx)
+            self.status_var.set(f"Foto dihapus. Sisa: {len(self.files_image)}")
+        else:
+            messagebox.showwarning("Peringatan", "Pilih foto di daftar terlebih dahulu!")
     
     # Fungsi untuk mengkonversi gambar ke PDF
     def proses_image_pdf(self):
