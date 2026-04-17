@@ -42,9 +42,23 @@ class PDFApp:
     # --- TAB 1: GABUNG ---
     def setup_merge_ui(self):
         tk.Label(self.tab_merge, text="Antrean Gabung PDF", font=("Arial", 10, "bold")).pack(pady=10)
-        self.list_merge = tk.Listbox(self.tab_merge, width=70, height=10)
-        self.list_merge.pack(padx=20, pady=5)
-        
+        # Frame untuk Listbox dan Scrollbar
+        list_frame = ttk.Frame(self.tab_merge)
+        list_frame.pack(padx=20, pady=5)
+        # Scrollbar
+        scrollbar = ttk.Scrollbar(list_frame, orient=tk.VERTICAL)
+        scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+        self.list_merge = tk.Listbox(
+            list_frame,
+            width=65,
+            height=10,
+            exportselection=False,
+            yscrollcommand=scrollbar.set
+        )
+        self.list_merge.pack(side=tk.LEFT, fill=tk.BOTH)
+        scrollbar.config(command=self.list_merge.yview)
+
+        # Variabel untuk Button
         btn_frame = ttk.Frame(self.tab_merge)
         btn_frame.pack(pady=10)
         ttk.Button(btn_frame, text="Tambah File", command=self.pilih_merge_multi).grid(row=0, column=0, padx=5)
@@ -68,9 +82,23 @@ class PDFApp:
     # --- TAB 3: WORD KE PDF (BATCH) ---
     def setup_word_ui(self):
         tk.Label(self.tab_word, text="Antrean Konversi Word ke PDF", font=("Arial", 10, "bold")).pack(pady=10)
-        self.list_word = tk.Listbox(self.tab_word, width=70, height=10)
-        self.list_word.pack(padx=20, pady=5)
+        # Frame untuk Lisbox dan Scrollbar
+        list_frame = ttk.Frame(self.tab_word)
+        list_frame.pack(padx=20, pady=5)
+        # Scrollbar
+        scrollbar = ttk.Scrollbar(list_frame, orient=tk.VERTICAL)
+        scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+        self.list_word = tk.Listbox(
+            list_frame,
+            width=65,
+            height=10,
+            exportselection=False,
+            yscrollcommand=scrollbar.set
+        )
+        self.list_word.pack(side=tk.LEFT, fill=tk.BOTH)
+        scrollbar.config(command=self.list_word.yview)
 
+        # Variabel untuk Button
         btn_frame = ttk.Frame(self.tab_word)
         btn_frame.pack(pady=10)
         ttk.Button(btn_frame, text="Tambah Word", command=self.pilih_word_multi).grid(row=0, column=0, padx=5)
@@ -147,15 +175,31 @@ class PDFApp:
     # --- TAB KONVERSI FOTO KE PDF ---
     def setup_image_ui(self):
         tk.Label(self.tab_image, text="Daftar Foto (JPG/PNG) untuk jadi PDF", font=("Arial", 10, "bold")).pack(pady=10)
-        self.list_image = tk.Listbox(self.tab_image, width=70, height=10, exportselection=False)
-        self.list_image.pack(padx=20, pady=5)
+        # Frame untuk menampung ListBox dan Scrollbar
+        list_frame = ttk.Frame(self.tab_image)
+        list_frame.pack(padx=20, pady=5)
+        # Scrollbar
+        scrollbar = ttk.Scrollbar(list_frame, orient=tk.VERTICAL)
+        scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
 
+        self.list_image = tk.Listbox(
+            list_frame,
+            width=65,
+            height=10,
+            exportselection=False,
+            yscrollcommand=scrollbar.set
+        )
+        self.list_image.pack(side=tk.LEFT, fill=tk.BOTH)
+
+        scrollbar.config(command=self.list_image.yview)
+
+        # Bagian Button
         btn_frame = ttk.Frame(self.tab_image)
         btn_frame.pack(pady=10)
         ttk.Button(btn_frame, text="Tambah Foto", command=self.pilih_image_multi).grid(row=0, column=0, padx=5)
         ttk.Button(btn_frame, text="Hapus Terpilih", command=self.hapus_image_satu).grid(row=0, column=1, padx=5)
 
-        ttk.Button(self.tab_image, text="GABUNG FOTO KE PDF", command=self.proses_image_pdf).pack(pady=20)
+        ttk.Button(self.tab_image, text="UBAH FOTO KE PDF", command=self.proses_image_pdf).pack(pady=20)
     
     # Fungsi memilih multiple file gambar
     def pilih_image_multi(self):
