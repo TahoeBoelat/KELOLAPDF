@@ -8,7 +8,7 @@ class PDFApp:
         self.root = root
         self.root.title("Kelola PDF")
         self.root.geometry("600x650")
-        
+
         # State Data
         self.files_merge = []
         self.files_word = []
@@ -39,9 +39,57 @@ class PDFApp:
         self.status_label = tk.Label(root, textvariable=self.status_var, bd=1, relief=tk.SUNKEN, anchor=tk.W)
         self.status_label.pack(side=tk.BOTTOM, fill=tk.X)
 
+        # Binding keyboard global
+        self.root.bind_all('<Control-a>', self.handle_select_all)
+        self.root.bind_all('<Control-A>', self.handle_select_all)
+        self.root.bind_all('<Delete>', lambda e: self.handle_delete_masal())
+    
+    # Fungsi untuk fitur binding
+    # Fungsi untuk mendeteksi current tab
+    def get_current_tab_data(self):
+        """Mendeteksi tab aktif dan mengembalikan(listbox, list_data)"""
+        try:
+            current_tab_idx = self.notebook.index(self.notebook.select())
+
+            # Mapping index ke object
+            mapping = {
+                0: (self.list_image, self.files_merge),
+                2: (self.list_word, self.files_word),
+                3: (self.list_image, self.files_image)
+            }
+
+            return mapping.get(current_tab_idx, (None, None))
+        except:
+            return None, None
+        
+    # Fungsi untuk Algoritma Hapus dan Select All
+    def handle_select_all(self, event=None):
+        listbox, _ = self.get_current_tab_data()
+        if listbox:
+            listbox.select_set(0, tk.END)
+            listbox.focus_set()
+        return "break"
+    
+    def handle_delete_massal(self, event=None):
+        listbox, data_list = self.get_current_tab_data()
+
+        if not listbox or not data_list:
+            return
+        
+        indices = listbox.curselection()
+        if not indices:
+            return
+        
+        for i in sorted(indices, reverse=True):
+            if i < len(data_list):
+                del data_list[i]
+                listbox.delete(i)
+        
+        self.status_var.set(f"Daftar diperbarui. Sisa file: {len(data_list)}")
+        
     # --- TAB 1: GABUNG ---
     def setup_merge_ui(self):
-        tk.Label(self.tab_merge, text="Antrean Gabung PDF", font=("Arial", 10, "bold")).pack(pady=10)
+        tk.Label(self.tab_merge, text="Gabung PDF", font=("Arial", 10, "bold")).pack(pady=10)
         # Frame untuk Listbox dan Scrollbar
         list_frame = ttk.Frame(self.tab_merge)
         list_frame.pack(padx=20, pady=5)
@@ -62,7 +110,7 @@ class PDFApp:
         btn_frame = ttk.Frame(self.tab_merge)
         btn_frame.pack(pady=10)
         ttk.Button(btn_frame, text="Tambah File", command=self.pilih_merge_multi).grid(row=0, column=0, padx=5)
-        ttk.Button(btn_frame, text="Hapus Terpilih", command=self.hapus_merge_satu).grid(row=0, column=1, padx=5)
+        ttk.Button(btn_frame, text="Hapus Terpilih", command=self.handle_delete_massal).grid(row=0, column=1, padx=5)
         
         ttk.Button(self.tab_merge, text="PROSES GABUNG", command=self.proses_gabung).pack(pady=20)
 
@@ -174,7 +222,7 @@ class PDFApp:
     
     # --- TAB KONVERSI FOTO KE PDF ---
     def setup_image_ui(self):
-        tk.Label(self.tab_image, text="Daftar Foto (JPG/PNG) untuk jadi PDF", font=("Arial", 10, "bold")).pack(pady=10)
+        tk.Label(self.tab_image, text="Rubah Foto (JPG/PNG) untuk jadi PDF", font=("Arial", 10, "bold")).pack(pady=10)
         # Frame untuk menampung ListBox dan Scrollbar
         list_frame = ttk.Frame(self.tab_image)
         list_frame.pack(padx=20, pady=5)
@@ -187,6 +235,7 @@ class PDFApp:
             width=65,
             height=10,
             exportselection=False,
+            selectmode=tk.EXTENDED,
             yscrollcommand=scrollbar.set
         )
         self.list_image.pack(side=tk.LEFT, fill=tk.BOTH)
