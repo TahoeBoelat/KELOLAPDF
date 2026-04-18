@@ -42,7 +42,9 @@ class PDFApp:
         # Binding keyboard global
         self.root.bind_all('<Control-a>', self.handle_select_all)
         self.root.bind_all('<Control-A>', self.handle_select_all)
-        self.root.bind_all('<Delete>', lambda e: self.handle_delete_masal())
+        self.root.bind_all('<Control-r>', lambda e: self.handle_reset())
+        self.root.bind_all('<Control-R>', lambda e: self.handle_reset())
+        self.root.bind_all('<Delete>', lambda e: self.handle_delete())
     
     # Fungsi untuk fitur binding
     # Fungsi untuk mendeteksi current tab
@@ -62,7 +64,7 @@ class PDFApp:
         except:
             return None, None
         
-    # Fungsi untuk Algoritma Hapus dan Select All
+    # Fungsi untuk Menghapus File dan Select All
     def handle_select_all(self, event=None):
         listbox, _ = self.get_current_tab_data()
         if listbox:
@@ -70,7 +72,7 @@ class PDFApp:
             listbox.focus_set()
         return "break"
     
-    def handle_delete_massal(self, event=None):
+    def handle_delete(self, event=None):
         listbox, data_list = self.get_current_tab_data()
 
         if not listbox or not data_list:
@@ -86,6 +88,17 @@ class PDFApp:
                 listbox.delete(i)
         
         self.status_var.set(f"Daftar diperbarui. Sisa file: {len(data_list)}")
+    
+    def handle_reset(self):
+        listbox, data_list = self.get_current_tab_data()
+
+        if listbox is not None and data_list is not None:
+            confirm_reset = messagebox.askyesno("Konfirmasi Reset", "Apakah anda yakin untuk menghapus semua file ini?")
+
+            if confirm_reset:
+                data_list.clear()
+                listbox.delete(0, tk.END)
+                self.status_var.set("Berhasil di Reset")
         
     # --- TAB 1: GABUNG ---
     def setup_merge_ui(self):
@@ -110,7 +123,8 @@ class PDFApp:
         btn_frame = ttk.Frame(self.tab_merge)
         btn_frame.pack(pady=10)
         ttk.Button(btn_frame, text="Tambah File", command=self.pilih_merge_multi).grid(row=0, column=0, padx=5)
-        ttk.Button(btn_frame, text="Hapus Terpilih", command=self.handle_delete_massal).grid(row=0, column=1, padx=5)
+        ttk.Button(btn_frame, text="Hapus Terpilih", command=self.handle_delete).grid(row=0, column=1, padx=5)
+        ttk.Button(btn_frame, text="Reset", command=self.handle_reset).grid(row=0, column=2, padx=5)
         
         ttk.Button(self.tab_merge, text="PROSES GABUNG", command=self.proses_gabung).pack(pady=20)
 
@@ -125,11 +139,11 @@ class PDFApp:
         self.ent_halaman = ttk.Entry(self.tab_split, width=10)
         self.ent_halaman.pack()
         
-        ttk.Button(self.tab_split, text="PROSES POTONG", command=self.proses_potong).pack(pady=30)
+        ttk.Button(self.tab_split, text="POTONG", command=self.proses_potong).pack(pady=30)
 
     # --- TAB 3: WORD KE PDF (BATCH) ---
     def setup_word_ui(self):
-        tk.Label(self.tab_word, text="Antrean Konversi Word ke PDF", font=("Arial", 10, "bold")).pack(pady=10)
+        tk.Label(self.tab_word, text="Rubah Word ke PDF", font=("Arial", 10, "bold")).pack(pady=10)
         # Frame untuk Lisbox dan Scrollbar
         list_frame = ttk.Frame(self.tab_word)
         list_frame.pack(padx=20, pady=5)
@@ -151,6 +165,7 @@ class PDFApp:
         btn_frame.pack(pady=10)
         ttk.Button(btn_frame, text="Tambah Word", command=self.pilih_word_multi).grid(row=0, column=0, padx=5)
         ttk.Button(btn_frame, text="Hapus Terpilih", command=self.hapus_word_satu).grid(row=0, column=1, padx=5)
+        ttk.Button(btn_frame, text="Reset", command=self.handle_reset).grid(row=0, column=2, padx=5)
         
         ttk.Button(self.tab_word, text="KONVERSI SEMUA KE PDF", command=self.proses_batch_word).pack(pady=20)
 
@@ -247,6 +262,7 @@ class PDFApp:
         btn_frame.pack(pady=10)
         ttk.Button(btn_frame, text="Tambah Foto", command=self.pilih_image_multi).grid(row=0, column=0, padx=5)
         ttk.Button(btn_frame, text="Hapus Terpilih", command=self.hapus_image_satu).grid(row=0, column=1, padx=5)
+        ttk.Button(btn_frame, text="Reset", command=self.handle_reset).grid(row=0, column=2, padx=5)
 
         ttk.Button(self.tab_image, text="UBAH FOTO KE PDF", command=self.proses_image_pdf).pack(pady=20)
     
