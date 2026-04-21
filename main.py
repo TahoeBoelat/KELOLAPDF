@@ -23,16 +23,19 @@ class PDFApp:
         self.tab_split = ttk.Frame(self.notebook)
         self.tab_word = ttk.Frame(self.notebook)
         self.tab_image = ttk.Frame(self.notebook)
+        self.tab_compress = ttk.Frame(self.notebook)
 
         self.notebook.add(self.tab_merge, text=" Gabung PDF ")
         self.notebook.add(self.tab_split, text=" Potong PDF ")
         self.notebook.add(self.tab_word, text=" Word ke PDF ")
         self.notebook.add(self.tab_image, text=" Foto ke PDF ")
+        self.notebook.add(self.tab_compress, text=" Kompres PDF ")
 
         self.setup_merge_ui()
         self.setup_split_ui()
         self.setup_word_ui()
         self.setup_image_ui()
+        self.setup_compress_ui()
 
         # Status Bar
         self.status_var = tk.StringVar(value="Siap")
@@ -302,6 +305,45 @@ class PDFApp:
                 messagebox.showinfo("Sukses", f"Berhasil membuat PDF dari {len(self.files_image)} foto!")
             except Exception as e:
                 messagebox.showerror("Error", f"Gagal memproses gambar: {e}")
+            self.status_var.set("Siap")
+    
+    # TAB KOMPRES PDF 
+    def setup_compress_ui(self):
+        tk.Label(self.tab_compress, text="Kompres Ukuran File PDF", font=("Arial", 10, "bold")).pack(pady=10)
+
+        self.file_to_compress = ""
+        self.lbl_file_compress = tk.Label(self.tab_compress, text="Belum ada file dipilih", fg="gray")
+        self.lbl_file_compress.pack(pady=5)
+
+        btn_frame = ttk.Frame(self.tab_compress)
+        btn_frame.pack(pady=10)
+
+        ttk.Button(btn_frame, text="Pilih File PDF", command=self.pilih_file_compress).grid(row=0, column=0, padx=5)
+        ttk.Button(self.tab_compress, text="Kompres Sekarang", command=self.proses_kompres).pack(pady=20)
+    
+    def pilih_file_compress(self):
+        f = filedialog.askopenfilename(filetypes=[("PDF Files", "*.pdf")])
+        if f:
+            self.file_to_compress = f
+            self.lbl_file_compress.config(text=os.path.basename(f), fg="black")
+
+    def proses_kompres(self):
+        if not self.file_to_compress:
+            messagebox.showwarning("Peringatan", "Pilih file PDF yang akan dikompres!")
+            return
+        out = filedialog.asksaveasfilename(defaultextension=".pdf", filetypes=[("PDF Files", "*.pdf")])
+        if out:
+            self.status_var.set("Sedang mengompress...")
+            self.root.update_idletasks()
+            try:
+                from logic_pdf import kompres_pdf
+                kompres_pdf(self.file_to_compress, out)
+
+                size_old = os.path.getsize(self.file_to_compress) / 1024
+                size_new = os.path.getsize(out) / 1024
+                messagebox.showinfo("Sukses", f"Berhasil!\nUkuran Awal: {size_old:.1f} KB\nUkuran Baru: {size_new:.1f} KB")
+            except Exception as e:
+                messagebox.showerror("Error", f"Gagal kompres: {e}")
             self.status_var.set("Siap")
 
 if __name__ == "__main__":

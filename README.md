@@ -8,6 +8,16 @@ Aplikasi desktop berbasis Python untuk mengelola file PDF secara cepat dan offli
 
 ## RIWAYAT PENGEMBANGAN (CHANGELOG)
 
+### v1.5-beta - 2026-04-21
+- **Fitur Baru:** Modul "PDF Compressor" (Tahap Awal) untuk mengecilkan ukuran file PDF.
+- **Fitur Baru (UX):** Tombol **"Reset Daftar"** di setiap tab untuk mengosongkan antrean dalam satu klik.
+- **Fitur Baru (Shortcut):** Implementasi binding keyboard global:
+    - `Ctrl + A`: Pilih semua file di daftar aktif.
+    - `Delete`: Hapus massal file terpilih (dengan algoritma *reverse index*).
+    - `Ctrl + R`: Shortcut cepat untuk fungsi Reset.
+- **Perbaikan UI:** Penambahan **Scrollbar** di semua Listbox untuk navigasi file yang lebih baik.
+- **Perbaikan Bug:** Menangani error `TypeError` pada pemilihan file tunggal untuk kompresi.
+
 ### [v1.4] - 2026-04-16
 - **Fitur Baru:** Implementasi fitur konversi gambar ke PDF
 - **Perbaikan Bug:** Memperbaiki masalah seleksi Listbox menggunakan `exportselection=False` sehingga tombol hapus bekerja lebih stabil.

@@ -69,3 +69,16 @@ def image_ke_pdf(daftar_gambar, path_output):
             save_all = True,
             append_image=sisanya
         )
+
+# Fungsi untuk mengkompress PDF
+def kompres_pdf(path_input, path_output):
+    """Mengecilkan ukuran file PDF dengan mengompres konten internal"""
+    reader = PdfReader(path_input)
+    writer = PdfWriter()
+
+    for page in reader.pages:
+        new_page = writer.add_page(page)
+        new_page.compress_content_streams()
+    
+    with open(path_output, "wb") as f:
+        writer.write(f)
