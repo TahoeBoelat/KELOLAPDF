@@ -1,7 +1,7 @@
 import tkinter as tk
 from tkinter import ttk, filedialog, messagebox
 import os
-from logic_pdf import gabung_pdf, potong_pdf, batch_word_ke_pdf
+from logic_pdf import gabung_pdf, potong_pdf, batch_word_ke_pdf, kompres_pdf
 
 class PDFApp:
     def __init__(self, root):
@@ -333,17 +333,25 @@ class PDFApp:
             return
         out = filedialog.asksaveasfilename(defaultextension=".pdf", filetypes=[("PDF Files", "*.pdf")])
         if out:
+            if not out.lower().endswith('.pdf'):
+                out += '.pdf'
             self.status_var.set("Sedang mengompress...")
             self.root.update_idletasks()
             try:
-                from logic_pdf import kompres_pdf
-                kompres_pdf(self.file_to_compress, out)
-
-                size_old = os.path.getsize(self.file_to_compress) / 1024
-                size_new = os.path.getsize(out) / 1024
-                messagebox.showinfo("Sukses", f"Berhasil!\nUkuran Awal: {size_old:.1f} KB\nUkuran Baru: {size_new:.1f} KB")
+                sukses = kompres_pdf(self.file_to_compress, out, kualitas=60)
+                if sukses:
+                    size_old = os.path.getsize(self.file_to_compress) / 1024
+                    size_new = os.path.getsize(out) / 1024
+                    messagebox.showinfo("Sukses", 
+                        f"Berhasil Kompres!\n"
+                        f"Ukuran Awal: {size_old:.1f} KB\n"
+                        f"Ukuran Baru: {size_new:.1f} KB\n"
+                        f"Penghematan: {size_old - size_new:.1f} KB")
+                else:
+                    messagebox.showerror("Error", "Gagal melakukan kompresi.")
             except Exception as e:
-                messagebox.showerror("Error", f"Gagal kompres: {e}")
+                messagebox.showerror("Error", f"Terjadi kesalahan: {e}")
+
             self.status_var.set("Siap")
 
 if __name__ == "__main__":

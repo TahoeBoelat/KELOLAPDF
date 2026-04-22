@@ -2,6 +2,8 @@ from pypdf import PdfReader, PdfWriter
 from docx2pdf import convert
 from PIL import Image
 import os
+import io
+import fitz
 
 # Fungsi untuk mengkonversi multiple docx format ke PDF
 def batch_word_ke_pdf(daftar_docx, folder_tujuan):
@@ -71,14 +73,31 @@ def image_ke_pdf(daftar_gambar, path_output):
         )
 
 # Fungsi untuk mengkompress PDF
-def kompres_pdf(path_input, path_output):
+def kompres_pdf(path_input, path_output, kualitas=60):
     """Mengecilkan ukuran file PDF dengan mengompres konten internal"""
-    reader = PdfReader(path_input)
-    writer = PdfWriter()
+    try:
+        doc = fitz.open(path_input)
+        pdf_baru = fitz.open()
 
-    for page in reader.pages:
-        new_page = writer.add_page(page)
-        new_page.compress_content_streams()
-    
-    with open(path_output, "wb") as f:
-        writer.write(f)
+        for page_num in range(len(doc)):
+            page = doc.load_page(page_num)
+
+            pix = page.get_pixmap(alpha=False)
+            img = Image.frombytes("RGB", [pix.width, pix.height], pix.samples)
+
+            img_buffer = io.BytesIO()
+            img.save(img_buffer, format="JPEG", quality=kualitas, optimize=True)
+            img_buffer.seek(0)
+            
+            rect = page.rect
+            new_page = pdf_baru.new_page(width=rect.width, height=rect.height)
+            new_page.insert_image(rect, stream=img_buffer.getvalue())
+
+            pdf_baru.save(path_output, garbage=4, deflate=True)
+            pdf_baru.close()
+            doc.close()
+
+            return True
+    except Exception as e:
+        print(f"Detail Error: {e}")
+        return False
