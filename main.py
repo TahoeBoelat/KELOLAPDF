@@ -314,6 +314,18 @@ class PDFApp:
         self.file_to_compress = ""
         self.lbl_file_compress = tk.Label(self.tab_compress, text="Belum ada file dipilih", fg="gray")
         self.lbl_file_compress.pack(pady=5)
+        # Kualitas Kompress
+        self.lbl_q = tk.Label(self.tab_compress, text="Pilih tingkat kualitas")
+        self.lbl_q.pack(pady=(10,0))
+
+        self.quality_slider = tk.Scale(
+            self.tab_compress,
+            from_=10, to=100,
+            orient=tk.HORIZONTAL,
+            length=300
+        )
+        self.quality_slider.set(60)
+        self.quality_slider.pack(pady=10)
 
         btn_frame = ttk.Frame(self.tab_compress)
         btn_frame.pack(pady=10)
@@ -329,31 +341,33 @@ class PDFApp:
 
     def proses_kompres(self):
         if not self.file_to_compress:
-            messagebox.showwarning("Peringatan", "Pilih file PDF yang akan dikompres!")
+            messagebox.showwarning("Peringatan", "Pilih file PDF dulu!")
             return
+        
         out = filedialog.asksaveasfilename(defaultextension=".pdf", filetypes=[("PDF Files", "*.pdf")])
         if out:
-            if not out.lower().endswith('.pdf'):
-                out += '.pdf'
-            self.status_var.set("Sedang mengompress...")
-            self.root.update_idletasks()
+            # Mengambil data dari slider
+            nilai_kualitas = self.quality_slider.get()
+
+            # Menambahkan informasi status
+            print(f"Memproses dengan kualitas: {nilai_kualitas}")
+
             try:
-                sukses = kompres_pdf(self.file_to_compress, out, kualitas=60)
+                sukses = kompres_pdf(self.file_to_compress, out, kualitas=nilai_kualitas)
+
                 if sukses:
                     size_old = os.path.getsize(self.file_to_compress) / 1024
                     size_new = os.path.getsize(out) / 1024
                     messagebox.showinfo("Sukses", 
-                        f"Berhasil Kompres!\n"
+                        f"Berhasil Kompres ({nilai_kualitas}%)!\n"
                         f"Ukuran Awal: {size_old:.1f} KB\n"
                         f"Ukuran Baru: {size_new:.1f} KB\n"
-                        f"Penghematan: {size_old - size_new:.1f} KB")
+                        f"Hemat: {size_old - size_new:.1f} KB")
                 else:
-                    messagebox.showerror("Error", "Gagal melakukan kompresi.")
+                    messagebox.showerror("Error", "Gagal kompres")
             except Exception as e:
                 messagebox.showerror("Error", f"Terjadi kesalahan: {e}")
-
-            self.status_var.set("Siap")
-
+                
 if __name__ == "__main__":
     app_root = tk.Tk()
     app = PDFApp(app_root)
