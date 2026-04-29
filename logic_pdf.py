@@ -73,31 +73,85 @@ def image_ke_pdf(daftar_gambar, path_output):
         )
 
 # Fungsi untuk mengkompress PDF
-def kompres_pdf(path_input, path_output, kualitas=60):
-    """Mengecilkan ukuran file PDF dengan mengompres konten internal"""
+def kompres_pdf(path_input, path_output, kualitas=60, strip_metadata=False):
+    doc = None
+    pdf_baru = None
     try:
+        # Membuka dokumen
         doc = fitz.open(path_input)
+        # Membuat wadah dokumen PDF kosong yang baru
         pdf_baru = fitz.open()
 
         for page_num in range(len(doc)):
+            # Memuat halaman
             page = doc.load_page(page_num)
-
+            # Render halaman ke gambar (Pixmap)
             pix = page.get_pixmap(alpha=False)
+            # Konversi Pixmap ke objek Pillow Image untuk kompresi JPEG
             img = Image.frombytes("RGB", [pix.width, pix.height], pix.samples)
 
+            # Menggunakan BytesIO agar pemrosesan gambar tetap di RAM
             img_buffer = io.BytesIO()
             img.save(img_buffer, format="JPEG", quality=kualitas, optimize=True)
             img_buffer.seek(0)
-            
-            rect = page.rect
-            new_page = pdf_baru.new_page(width=rect.width, height=rect.height)
-            new_page.insert_image(rect, stream=img_buffer.getvalue())
 
-            pdf_baru.save(path_output, garbage=4, deflate=True)
-            pdf_baru.close()
-            doc.close()
+            # Konversi bytes JPEG menjadi satu halaman PDF utuh
+            page_baru = pdf_baru.new_page(width=img.width, height=img.height)
 
-            return True
+            # Memasukan halaman terkompresi ke PDF baru
+            rect = fitz.Rect(0, 0, img.width, img.height)
+            page_baru.insert_image(rect, stream=img_buffer.getvalue())
+        
+        # Metadata Stripping
+        if strip_metadata:
+            # Metadata standar yang sering menyimpan info sensitif
+            sanitized_metadata = {
+                "author": "",
+                "creator": "Kelola PDF Open Source",
+                "producer": "Kelola PDF",
+                "title": "",
+                "subject": "",
+                "keywords": "",
+                "creationDate": "",
+                "modDate": ""
+            }
+            pdf_baru.set_metadata(sanitized_metadata)
+        pdf_baru.save(path_output, garbage=4, deflate=True)
+        return True
+    
     except Exception as e:
-        print(f"Detail Error: {e}")
+        print(f"Error pada fungsi kompres_pdf: {e}")
         return False
+    finally:
+        if doc:
+            doc.close()
+        if pdf_baru:
+            pdf_baru.close()
+
+# Fungsi untuk Metadata exposure
+def hapus_meta_data_pdf(path_input, path_output):
+    doc = "None"
+    try:
+        doc = fitz.open(path_input)
+        # Pendifinisian metadata yang kosong menggunakan dictionary
+        empty_metadata = {
+            "author": "",
+            "creator": "Kelola PDF Open Source",
+            "producer": "Kelola PDF",
+            "title": "",
+            "subject": "",
+            "keywords": "",
+            "creationDate": "",
+            "modDate": ""
+        }
+        # Memasukan metadata baru ke dokumen
+        doc.set_metadata(empty_metadata)
+        # Simpan dengan membersihkan garbage collection
+        doc.save(path_output, garbage=4, deflate=True)
+        return True
+    except Exception as e:
+        print(f"Error saat stripping metadata: {e}")
+        return False
+    finally:
+        if doc:
+            doc.close()

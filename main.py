@@ -332,6 +332,15 @@ class PDFApp:
 
         ttk.Button(btn_frame, text="Pilih File PDF", command=self.pilih_file_compress).grid(row=0, column=0, padx=5)
         ttk.Button(self.tab_compress, text="Kompres Sekarang", command=self.proses_kompres).pack(pady=20)
+
+        # Booleanvar untuk checkbox
+        self.strip_metadata_var = tk.BooleanVar(value=True)
+        self.cb_metadata = tk.Checkbutton(
+            self.tab_compress,
+            text="Hapus Metadata",
+            variable=self.strip_metadata_var
+        )
+        self.cb_metadata.pack(pady=5)
     
     def pilih_file_compress(self):
         f = filedialog.askopenfilename(filetypes=[("PDF Files", "*.pdf")])
@@ -348,12 +357,13 @@ class PDFApp:
         if out:
             # Mengambil data dari slider
             nilai_kualitas = self.quality_slider.get()
+            status_strip = self.strip_metadata_var.get()
 
             # Menambahkan informasi status
             print(f"Memproses dengan kualitas: {nilai_kualitas}")
 
             try:
-                sukses = kompres_pdf(self.file_to_compress, out, kualitas=nilai_kualitas)
+                sukses = kompres_pdf(self.file_to_compress, out, kualitas=nilai_kualitas, strip_metadata=status_strip)
 
                 if sukses:
                     size_old = os.path.getsize(self.file_to_compress) / 1024
