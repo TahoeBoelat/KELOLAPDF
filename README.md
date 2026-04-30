@@ -9,8 +9,10 @@ Aplikasi desktop berbasis Python untuk mengelola file PDF secara cepat dan offli
 
 ## RIWAYAT PENGEMBANGAN (CHANGELOG)
 
-### v1.5.1 - 2026-04-24
+### v1.5.1 - 2026-04-30
 - **Fitur Baru (UX):** Implementasi slider untuk memilih kualitas kompres PDF
+- **Fitur Baru:** Implementasi metadata stripper
+- **Perbaikan Bug:** Memperbaiki isu kompatibilitas PyMuPDF
 
 ### v1.5-beta - 2026-04-21
 - **Fitur Baru:** Modul "PDF Compressor" (Tahap Awal) untuk mengecilkan ukuran file PDF.
