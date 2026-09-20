@@ -37,6 +37,9 @@ def gabung_pdf(daftar_file, nama_output):
 def potong_pdf(input_pdf, halaman_pilihan, nama_output):
     reader = PdfReader(input_pdf)
     writer = PdfWriter()
+    total = len(reader.pages)
+    if halaman_pilihan < 1 or halaman_pilihan > total:
+        raise ValueError(f"Nomor halaman harus antara 1 dan {total}")
     # Mengambil halaman berdasarkan index
     halaman = reader.pages[halaman_pilihan - 1]
     writer.add_page(halaman)
@@ -123,14 +126,14 @@ def kompres_pdf(path_input, path_output, kualitas=60, strip_metadata=False):
         print(f"Error pada fungsi kompres_pdf: {e}")
         return False
     finally:
-        if doc:
+        if doc is not None:
             doc.close()
-        if pdf_baru:
+        if pdf_baru is not None:
             pdf_baru.close()
 
 # Fungsi untuk Metadata exposure
 def hapus_meta_data_pdf(path_input, path_output):
-    doc = "None"
+    doc = None
     try:
         doc = fitz.open(path_input)
         # Pendifinisian metadata yang kosong menggunakan dictionary
@@ -146,6 +149,8 @@ def hapus_meta_data_pdf(path_input, path_output):
         }
         # Memasukan metadata baru ke dokumen
         doc.set_metadata(empty_metadata)
+        # Menghapus metadata lama
+        doc.del_xml_metadata()
         # Simpan dengan membersihkan garbage collection
         doc.save(path_output, garbage=4, deflate=True)
         return True
@@ -153,5 +158,5 @@ def hapus_meta_data_pdf(path_input, path_output):
         print(f"Error saat stripping metadata: {e}")
         return False
     finally:
-        if doc:
+        if doc is not None:
             doc.close()

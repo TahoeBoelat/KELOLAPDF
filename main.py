@@ -1,7 +1,7 @@
 import tkinter as tk
 from tkinter import ttk, filedialog, messagebox
 import os
-from logic_pdf import gabung_pdf, potong_pdf, batch_word_ke_pdf, kompres_pdf
+from logic_pdf import gabung_pdf, potong_pdf, batch_word_ke_pdf, kompres_pdf, hapus_meta_data_pdf
 
 class PDFApp:
     def __init__(self, root):
@@ -24,18 +24,21 @@ class PDFApp:
         self.tab_word = ttk.Frame(self.notebook)
         self.tab_image = ttk.Frame(self.notebook)
         self.tab_compress = ttk.Frame(self.notebook)
+        self.tab_metadata = ttk.Frame(self.notebook)
 
         self.notebook.add(self.tab_merge, text=" Gabung PDF ")
         self.notebook.add(self.tab_split, text=" Potong PDF ")
         self.notebook.add(self.tab_word, text=" Word ke PDF ")
         self.notebook.add(self.tab_image, text=" Foto ke PDF ")
         self.notebook.add(self.tab_compress, text=" Kompres PDF ")
+        self.notebook.add(self.tab_metadata, text=" Metadata ")
 
         self.setup_merge_ui()
         self.setup_split_ui()
         self.setup_word_ui()
         self.setup_image_ui()
         self.setup_compress_ui()
+        self.setup_metadata_ui()
 
         # Status Bar
         self.status_var = tk.StringVar(value="Siap")
@@ -58,7 +61,7 @@ class PDFApp:
 
             # Mapping index ke object
             mapping = {
-                0: (self.list_image, self.files_merge),
+                0: (self.list_merge, self.files_merge),
                 2: (self.list_word, self.files_word),
                 3: (self.list_image, self.files_image)
             }
@@ -75,7 +78,7 @@ class PDFApp:
             listbox.focus_set()
         return "break"
     
-    def handle_delete(self, event=None):
+    def handle_delete(self, event=None, dari_tombol=False):
         listbox, data_list = self.get_current_tab_data()
 
         if not listbox or not data_list:
@@ -83,6 +86,8 @@ class PDFApp:
         
         indices = listbox.curselection()
         if not indices:
+            if dari_tombol:
+                messagebox.showwarning("Peringatan", "Pilih file di daftar dulu!")
             return
         
         for i in sorted(indices, reverse=True):
@@ -126,7 +131,7 @@ class PDFApp:
         btn_frame = ttk.Frame(self.tab_merge)
         btn_frame.pack(pady=10)
         ttk.Button(btn_frame, text="Tambah File", command=self.pilih_merge_multi).grid(row=0, column=0, padx=5)
-        ttk.Button(btn_frame, text="Hapus Terpilih", command=self.handle_delete).grid(row=0, column=1, padx=5)
+        ttk.Button(btn_frame, text="Hapus Terpilih", command=lambda:self.handle_delete(dari_tombol=True)).grid(row=0, column=1, padx=5)
         ttk.Button(btn_frame, text="Reset", command=self.handle_reset).grid(row=0, column=2, padx=5)
         
         ttk.Button(self.tab_merge, text="PROSES GABUNG", command=self.proses_gabung).pack(pady=20)
@@ -167,7 +172,7 @@ class PDFApp:
         btn_frame = ttk.Frame(self.tab_word)
         btn_frame.pack(pady=10)
         ttk.Button(btn_frame, text="Tambah Word", command=self.pilih_word_multi).grid(row=0, column=0, padx=5)
-        ttk.Button(btn_frame, text="Hapus Terpilih", command=self.hapus_word_satu).grid(row=0, column=1, padx=5)
+        ttk.Button(btn_frame, text="Hapus Terpilih", command=lambda:self.handle_delete(dari_tombol=True)).grid(row=0, column=1, padx=5)
         ttk.Button(btn_frame, text="Reset", command=self.handle_reset).grid(row=0, column=2, padx=5)
         
         ttk.Button(self.tab_word, text="KONVERSI SEMUA KE PDF", command=self.proses_batch_word).pack(pady=20)
@@ -204,11 +209,16 @@ class PDFApp:
     def proses_potong(self):
         if not self.file_split_path or not self.ent_halaman.get(): return
         out = filedialog.asksaveasfilename(defaultextension=".pdf")
+        try:
+            halaman = int(self.ent_halaman.get())
+        except ValueError:
+            messagebox.showerror("Error", "Nomor halaman harus berupa angka bulat!")
+            return
         if out:
             try:
                 potong_pdf(self.file_split_path, int(self.ent_halaman.get()), out)
                 messagebox.showinfo("Sukses", "Halaman berhasil dipotong!")
-            except Exception as e: messagebox.showerror("Error", str(e))
+            except Exception as e: messagebox.showerror
 
     # --- FUNGSI LOGIKA (WORD BATCH) ---
     def pilih_word_multi(self):
@@ -264,7 +274,7 @@ class PDFApp:
         btn_frame = ttk.Frame(self.tab_image)
         btn_frame.pack(pady=10)
         ttk.Button(btn_frame, text="Tambah Foto", command=self.pilih_image_multi).grid(row=0, column=0, padx=5)
-        ttk.Button(btn_frame, text="Hapus Terpilih", command=self.hapus_image_satu).grid(row=0, column=1, padx=5)
+        ttk.Button(btn_frame, text="Hapus Terpilih", command=lambda:self.handle_delete(dari_tombol=True)).grid(row=0, column=1, padx=5)
         ttk.Button(btn_frame, text="Reset", command=self.handle_reset).grid(row=0, column=2, padx=5)
 
         ttk.Button(self.tab_image, text="UBAH FOTO KE PDF", command=self.proses_image_pdf).pack(pady=20)
@@ -377,7 +387,49 @@ class PDFApp:
                     messagebox.showerror("Error", "Gagal kompres")
             except Exception as e:
                 messagebox.showerror("Error", f"Terjadi kesalahan: {e}")
-                
+
+    # Tab hapus metadata
+    def setup_metadata_ui(self):
+        tk.Label(self.tab_metadata, text="Hapus Metadata PDF", font=("Arial", 10, "bold")).pack(pady=10)
+
+        self.file_metadata = ""
+        self.lbl_file_metadata = tk.Label(self.tab_metadata, text="Belum ada file dipilih", fg="gray")
+        self.lbl_file_metadata.pack(pady=5)
+
+        tk.Button(self.tab_metadata, text="Pilih File PDF", command=self.pilih_file_metadata).pack(pady=10)
+        ttk.Button(self.tab_metadata, text="HAPUS METADATA", command=self.proses_metadata).pack(pady=20)
+
+    # Fungsi pilih metadata
+    def pilih_file_metadata(self):
+        f = filedialog.askopenfilename(filetypes=[("PDF Files", "*.pdf")])
+        if f:
+            self.file_metadata = f
+            self.lbl_file_metadata.config(text=os.path.basename(f), fg="black")
+
+    # Fungsi pengolah metadata
+    def proses_metadata(self):
+        if not self.file_metadata:
+            messagebox.showwarning("Peringatan", "Pilih file PDF dulu")
+            return
+
+        out = filedialog.asksaveasfilename(defaultextension=".pdf", filetypes=[("PDF Files", "*.pdf")])
+        if out:
+            # PyMuPDF tidak bisa menyimpan ke file yang sedang dibuka (file sumber),
+            # jadi jalur output yang sama dengan input ditolak sejak awal.
+            if os.path.abspath(out) == os.path.abspath(self.file_metadata):
+                messagebox.showerror("Error", "Simpan hasil dengan nama atau lokasi berbeda dari file asli!")
+                return
+
+            self.status_var.set("Menghapus metadata...")
+            self.root.update_idletasks()
+
+            # hapus_meta_data_pdf() mengembalikan True/False, bukan melempar error
+            if hapus_meta_data_pdf(self.file_metadata, out):
+                messagebox.showinfo("Sukses", "Metadata berhasil dihapus!")
+            else:
+                messagebox.showerror("Error", "Gagal menghapus metadata")
+            self.status_var.set("Siap")
+                 
 if __name__ == "__main__":
     app_root = tk.Tk()
     app = PDFApp(app_root)

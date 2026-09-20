@@ -9,6 +9,11 @@ Aplikasi desktop berbasis Python untuk mengelola file PDF secara cepat dan offli
 
 ## RIWAYAT PENGEMBANGAN (CHANGELOG)
 
+### v1.5.2-beta - 2026-09-19
+- **Fitur Baru**: Tab "Metadata" untuk menghapus metadata (Info dictionary dan XMP) dari PDF.
+- **Perbaikan Bug:** Memperbaiki bug pada: 
+  - Button 'Hapus terpilih' mendukung pilih banyak file. 
+
 ### v1.5.1 - 2026-04-30
 - **Fitur Baru (UX):** Implementasi slider untuk memilih kualitas kompres PDF
 - **Fitur Baru:** Implementasi metadata stripper
