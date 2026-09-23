@@ -1,7 +1,7 @@
 import tkinter as tk
 from tkinter import ttk, filedialog, messagebox
 import os
-from logic_pdf import gabung_pdf, potong_pdf, batch_word_ke_pdf, kompres_pdf, hapus_meta_data_pdf
+from logic_pdf import gabung_pdf, potong_pdf, batch_word_ke_pdf, kompres_pdf, hapus_meta_data_pdf, buat_qr_code, simpan_qr_code
 
 class PDFApp:
     def __init__(self, root):
@@ -25,6 +25,7 @@ class PDFApp:
         self.tab_image = ttk.Frame(self.notebook)
         self.tab_compress = ttk.Frame(self.notebook)
         self.tab_metadata = ttk.Frame(self.notebook)
+        self.tab_qr = ttk.Frame(self.notebook)
 
         self.notebook.add(self.tab_merge, text=" Gabung PDF ")
         self.notebook.add(self.tab_split, text=" Potong PDF ")
@@ -32,6 +33,7 @@ class PDFApp:
         self.notebook.add(self.tab_image, text=" Foto ke PDF ")
         self.notebook.add(self.tab_compress, text=" Kompres PDF ")
         self.notebook.add(self.tab_metadata, text=" Metadata ")
+        self.notebook.add(self.tab_qr, text=" Generate QR Code ")
 
         self.setup_merge_ui()
         self.setup_split_ui()
@@ -39,6 +41,7 @@ class PDFApp:
         self.setup_image_ui()
         self.setup_compress_ui()
         self.setup_metadata_ui()
+        self.setup_qr_ui()
 
         # Status Bar
         self.status_var = tk.StringVar(value="Siap")
@@ -429,6 +432,39 @@ class PDFApp:
             else:
                 messagebox.showerror("Error", "Gagal menghapus metadata")
             self.status_var.set("Siap")
+
+    # Tab QR Code Generator
+    def setup_qr_ui(self):
+        tk.Label(self.tab_qr, text="QR Code Generator", font=("Arial", 10, "bold")).pack(pady=10)
+
+        tk.Label(self.tab_qr, text="Masukan URL: ").pack(pady=(10, 0))
+        self.ent_qr_url = ttk.Entry(self.tab_qr, width=50)
+        self.ent_qr_url.pack(pady=5)
+
+        tk.Label(self.tab_qr, text="Simpan Sebagai:").pack(pady=(20, 5))
+        frame_qr_btn = ttk.Frame(self.tab_qr)
+        frame_qr_btn.pack(pady=5)
+        ttk.Button(frame_qr_btn, text="JPEG", command=lambda: self.proses_simpan_qr("JPEG")).grid(row=0, column=0, padx=10)
+        ttk.Button(frame_qr_btn, text="PNG", command=lambda: self.proses_simpan_qr("PNG")).grid(row=0, column=1, padx=10)
+        ttk.Button(frame_qr_btn, text="PDF", command=lambda: self.proses_simpan_qr("PDF")).grid(row=0, column=2, padx=10)
+
+    def proses_simpan_qr(self, format_file):
+        data = self.ent_qr_url.get().strip()
+        if not data:
+            messagebox.showwarning("Peringatan", "Masukan URL atau Teks Terlebih Dahulu")
+            return
+        ekstensi = "jpg" if format_file == "JPEG" else format_file.lower()
+        out = filedialog.asksaveasfilename (
+            defaultextension=f".{ekstensi}",
+            filetypes=[(format_file, f"*.{ekstensi}")]
+        )
+        if out:
+            try:
+                img = buat_qr_code(data)
+                simpan_qr_code(img, out, format_file)
+                messagebox.showinfo("Sukses", "QR Code berhasil disimpan")
+            except Exception as e:
+                messagebox.showerror("Error" f"Gagal membuat QR Code: {e}")
                  
 if __name__ == "__main__":
     app_root = tk.Tk()

@@ -4,6 +4,7 @@ from PIL import Image
 import os
 import io
 import fitz
+import qrcode
 
 # Fungsi untuk mengkonversi multiple docx format ke PDF
 def batch_word_ke_pdf(daftar_docx, folder_tujuan):
@@ -160,3 +161,26 @@ def hapus_meta_data_pdf(path_input, path_output):
     finally:
         if doc is not None:
             doc.close()
+
+# Fungsi untuk QR Code Generator
+def buat_qr_code(data):
+    # Mengembalikan objek image (pillow) dari teks atau url yang diberikan
+    qr = qrcode.QRCode (
+        version=1,
+        error_correction=qrcode.constants.ERROR_CORRECT_M,
+        box_size=10,
+        border=4
+    )
+    qr.add_data(data)
+    qr.make(fit=True)
+
+    img = qr.make_image(fill_color="black", back_color="white")
+
+    return img.convert("RGB")
+
+# Fungsi untuk menyimpan objek image qr ke file sesuai format
+def simpan_qr_code(img, path_output, format_file):
+    if format_file  == "JPEG":
+        img.save(path_output, "JPEG", quality=95)
+    else:
+        img.save(path_output, format_file)

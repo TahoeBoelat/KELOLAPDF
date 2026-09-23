@@ -11,6 +11,7 @@ Aplikasi desktop berbasis Python untuk mengelola file PDF secara cepat dan offli
 
 ### v1.5.2-beta - 2026-09-19
 - **Fitur Baru**: Tab "Metadata" untuk menghapus metadata (Info dictionary dan XMP) dari PDF.
+- **Fitur Baru**: QR Code Generator (Output as: JPEG, PNG, PDF)
 - **Perbaikan Bug:** Memperbaiki bug pada: 
   - Button 'Hapus terpilih' mendukung pilih banyak file. 
 
